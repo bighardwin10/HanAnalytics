@@ -83,6 +83,7 @@ function dispatch(action: Action) {
       state.value.toasts.splice(TOAST_LIMIT)
       break
     }
+
     case actionTypes.UPDATE_TOAST:
       state.value.toasts = state.value.toasts.map(t =>
         t.id === action.toast.id ? { ...t, ...action.toast } : t,
