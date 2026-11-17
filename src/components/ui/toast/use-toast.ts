@@ -78,10 +78,11 @@ const state = ref<State>({
 
 function dispatch(action: Action) {
   switch (action.type) {
-    case actionTypes.ADD_TOAST:
-      state.value.toasts = [action.toast, ...state.value.toasts].slice(0, TOAST_LIMIT)
+    case actionTypes.ADD_TOAST: {
+      state.value.toasts.unshift(action.toast)
+      state.value.toasts.splice(TOAST_LIMIT)
       break
-
+    }
     case actionTypes.UPDATE_TOAST:
       state.value.toasts = state.value.toasts.map(t =>
         t.id === action.toast.id ? { ...t, ...action.toast } : t,
