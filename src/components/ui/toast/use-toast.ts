@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, shallowRef } from 'vue'
 import type { Component, VNode } from 'vue'
 import type { ToastProps } from '.'
 
@@ -72,22 +72,24 @@ function addToRemoveQueue(toastId: string) {
   toastTimeouts.set(toastId, timeout)
 }
 
-const state = ref<State>({
+const state = shallowRef<State>({
   toasts: [],
 })
 
 function dispatch(action: Action) {
   switch (action.type) {
-    case actionTypes.ADD_TOAST: {
-      state.value.toasts.unshift(action.toast)
-      state.value.toasts.splice(TOAST_LIMIT)
+    case actionTypes.ADD_TOAST:
+      state.value = {
+        toasts: [action.toast, ...state.value.toasts].slice(0, TOAST_LIMIT),
+      }
       break
-    }
 
     case actionTypes.UPDATE_TOAST:
-      state.value.toasts = state.value.toasts.map(t =>
-        t.id === action.toast.id ? { ...t, ...action.toast } : t,
-      )
+      state.value = {
+        toasts: state.value.toasts.map(t =>
+          t.id === action.toast.id ? { ...t, ...action.toast } : t,
+        ),
+      }
       break
 
     case actionTypes.DISMISS_TOAST: {
@@ -102,23 +104,25 @@ function dispatch(action: Action) {
         })
       }
 
-      state.value.toasts = state.value.toasts.map(t =>
-        t.id === toastId || toastId === undefined
-          ? {
-              ...t,
-              open: false,
-            }
-          : t,
-      )
+      state.value = {
+        toasts: state.value.toasts.map(t =>
+          t.id === toastId || toastId === undefined
+            ? {
+                ...t,
+                open: false,
+              }
+            : t,
+        ),
+      }
       break
     }
 
     case actionTypes.REMOVE_TOAST:
-      if (action.toastId === undefined)
-        state.value.toasts = []
-      else
-        state.value.toasts = state.value.toasts.filter(t => t.id !== action.toastId)
-
+      state.value = {
+        toasts: action.toastId === undefined
+          ? []
+          : state.value.toasts.filter(t => t.id !== action.toastId),
+      }
       break
   }
 }
